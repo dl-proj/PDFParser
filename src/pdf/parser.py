@@ -21,6 +21,15 @@ def extract_interest_info(info_words, left, right, top, bottom_ret=False):
     return interest_info
 
 
+def extract_product_info(line, words, height):
+    init_item_info = ""
+    for word in words:
+        if line - 5 <= word[1] <= line + 1.5 * height:
+            init_item_info += word[2] + " "
+
+    return init_item_info[:-1]
+
+
 def parse_pdf(file_path):
     pdf_info = {"Co./Last Name": ["SPOTLIGHT"], "Addr 1 - Line 1": ["SPOTLIGHT"], "- Line 2": ["VADAIN,"],
                 "- Line 3": ["57 MAGNESIUM DRIVE"], "- Line 4": ["CRESTMEAD  QLD  4132"],
@@ -35,6 +44,9 @@ def parse_pdf(file_path):
     price_info = []
     qty_info = []
     total_info = []
+    ref_left = 0
+    ref_right = 0
+    ref_top = 0
     for i, word in enumerate(pdf_words):
         if word[4] == "PURCHASE" and pdf_words[i + 1][4] == "ORDER" and pdf_words[i + 2][4] == "DATE":
             date_info = extract_interest_info(info_words=pdf_words, left=word[0], right=pdf_words[i + 2][2],
@@ -57,7 +69,7 @@ def parse_pdf(file_path):
                                                       right=word[2] + 30, top=word[3])
             init_comment += init_comment_info + "; "
         elif word[4] == "PRODUCT" and pdf_words[i + 1][4] == "QTY":
-            product_info = extract_interest_info(info_words=pdf_words, left=word[0], right=pdf_words[i + 1][2] - 20,
+            product_info = extract_interest_info(info_words=pdf_words, left=word[0], right=pdf_words[i + 1][2] - 30,
                                                  top=word[3], bottom_ret=True)
         elif word[4] == "QTY" and pdf_words[i + 1][4] == "UNIT":
             qty_info = extract_interest_info(info_words=pdf_words, left=word[0] - 10, right=word[2] + 3,
@@ -68,18 +80,23 @@ def parse_pdf(file_path):
         elif word[4] == "LINE" and pdf_words[i + 1][4] == "TOTAL":
             total_info = extract_interest_info(info_words=pdf_words, left=word[0], right=pdf_words[i + 1][2] + 10,
                                                top=word[3], bottom_ret=True)
+        elif word[4] == "REFERENCE":
+            ref_left = word[0]
+            ref_right = word[2]
+            ref_top = word[3]
 
-    sorted_y_product_info = sorted(zip(qty_info, price_info, total_info), key=lambda k: k[0][1])
-    for s_y_info in sorted_y_product_info:
-        y_line = s_y_info[0][1]
-        pdf_info["Quantity"].append(s_y_info[0][2])
-        pdf_info["Price"].append(s_y_info[1][2].replace("$", ""))
-        pdf_info["Total"].append(s_y_info[2][2].replace("$", ""))
-        init_item_info = ""
-        for p_info in product_info:
-            if y_line - 5 <= p_info[1] <= y_line + 5:
-                init_item_info += p_info[2] + " "
-        pdf_info["Item Number"].append(init_item_info[:-1].replace("102288.", ""))
+    ref_lines = []
+    for word in pdf_words:
+        if ref_left - 10 < word[0] < ref_right and ref_top < word[1] and "POW" in word[4]:
+            ref_lines.append([word[1], word[3] - word[1]])
+
+    for r_line_info in ref_lines:
+        r_line, r_height = r_line_info
+        pdf_info["Item Number"].append(
+            extract_product_info(line=r_line, words=product_info, height=r_height).replace("102288.", ""))
+        pdf_info["Quantity"].append(extract_product_info(line=r_line, words=qty_info, height=r_height))
+        pdf_info["Price"].append(extract_product_info(line=r_line, words=price_info, height=r_height).replace("$", ""))
+        pdf_info["Total"].append(extract_product_info(line=r_line, words=total_info, height=r_height).replace("$", ""))
 
     pdf_info["Comment"].append(init_comment[:-2])
     pdf_info["Co./Last Name"] = len(pdf_info["Item Number"]) * pdf_info["Co./Last Name"]
