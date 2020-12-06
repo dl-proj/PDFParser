@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PDF Parser</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+    crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+</head>
+<body>
+    <div class="content" style="display: block; margin-top: 40px; margin-bottom: 40px">
+        <div class="col-sm-12 col-md-12 col-lg-12 col-xl-12 form-group" style="display: flex">
+            <div class="col-sm-3 col-md-3 col-lg-3 col-xl-3 form-group">
+                <div class="form-group">
+                    <form action = "/upload" method = "post" enctype="multipart/form-data">
+                        <input type="file" name="file" multiple/>
+                        <input type="button" class="btn btn-primary" id="btnSubmit" value="Upload">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
+</html>
