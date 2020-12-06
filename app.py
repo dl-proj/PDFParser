@@ -19,6 +19,7 @@ def test_engine():
 @app.route('/upload', methods=['POST'])
 def upload():
     uploaded_files = []
+    csv_option = request.form["csvOption"]
 
     if request.method == 'POST':
         files = request.files.getlist("file")
@@ -27,10 +28,11 @@ def upload():
             file_path = os.path.join(UPLOAD_DIR, file_name)
             if ".pdf" in file_name:
                 file.save(file_path)
-                output_file_path = create_csv_file(file_path=file_path)
-                uploaded_files.append(output_file_path)
+                uploaded_files.append(file_path)
 
-        return render_template("file_upload_form.html", response=response)
+        result_file = create_csv_file(file_paths=uploaded_files, option=csv_option)
+
+        return send_file(result_file, as_attachment=True)
 
 
 if __name__ == '__main__':
